@@ -1,0 +1,45 @@
+syntax = "proto3";
+import "Protos/Common.proto";
+
+option csharp_namespace = "gRPC.Common.Protos";
+
+package ru.bit76.energymng.server.grpc.aiconnector;
+
+message PredictPeakHoursRequest {
+  string request_guid = 1;
+  string source_database = 2;
+  string target_database = 3;
+  common.Date start_date = 4;
+  int32 region = 5;
+  int32 model_id = 6;
+}
+
+message PredictConsumptionRequest {
+  string request_guid = 1;
+  string source_database = 2;
+  string target_database = 3;
+  common.Date start_date = 4;
+  string metering_point_guid = 5;
+  int32 region_code = 6;
+  string algo_guid = 7;
+  bool with_weather = 8;
+}
+
+message PredictPriceRequest {
+  string request_guid = 1;
+  common.Date start_date = 2;
+  int32 regionCode = 3;
+  string marketParticipantGuid = 4;
+}
+
+service AiService {
+  rpc PredictPeakHours (PredictPeakHoursRequest) returns (common.BaseResponse);
+}
+
+service ConsumptionService {
+  rpc PredictConsumption (PredictConsumptionRequest) returns (common.BaseResponse);
+}
+
+service PriceService {
+  rpc PredictPrice (PredictPriceRequest) returns (common.BaseResponse);
+}

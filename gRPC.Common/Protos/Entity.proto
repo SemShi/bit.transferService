@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+import "Protos/Common.proto";
+
+option csharp_namespace = "gRPC.Common.Protos";
+
+package ru.bit76.energymng.server.grpc.entity;
+
+message DcVoltagePower {
+  int32 id = 1;
+  string name = 2;
+  common.NullableDouble minVal = 3;
+  common.NullableDouble maxVal = 4;
+}
+
+message DcRegion {
+  int32 code = 1;
+  string name = 2;
+  int32 dc_ups_id = 3;
+  int32 dc_price_zone_id = 4;
+}
+
+message DcParam {
+  int32 id = 1;
+  string name = 2;
+  string type = 3;
+  bool required = 4;
+  common.NullableInteger dc_dictionary_id = 5;
+  common.NullableString value_default = 6;
+  common.NullableString value_mask = 7;
+  common.NullableDouble value_min = 8;
+  common.NullableDouble value_max = 9;
+}
+
+message DcMarketParticipant {
+  int32 id = 1;
+  string guid = 2;
+  string name = 3;
+  string code_name = 4;
+  DcRegion region = 5;
+}
+
+message Calculation {
+  string guid = 1;
+  string employee_guid = 2;
+  int32 region_code = 3;
+  common.Date d_beg = 4;
+  common.Date d_end = 5;
+}
+
+message MeteringPointCalculation {
+  string guid = 1;
+  string metering_point_guid = 2;
+  int32 dc_voltage_id = 3;
+  int32 dc_power_id = 4;
+  int32 contract_type = 5;
+  string dc_market_participant_guid = 6;
+  common.NullableInteger cur_pc_id = 7;
+  string calculation_guid = 8;
+}
+
+message PriceCategoryCalculation {
+  string guid = 1;
+  string metering_point_calc_guid = 2;
+  common.Date date = 3;
+  int32 dc_pc_id = 4;
+  double consumption = 5;
+  double total_price = 6;
+  double rate = 7;
+  bool most_profitable = 8;
+  double profit = 9;
+  common.NullableDouble sales_allowance = 10;
+  common.NullableDouble infrastructure_payment = 11;
+  common.NullableDouble electricity_price = 12;
+  common.NullableDouble electricity_transfer_rate = 13;
+  common.NullableDouble power_price = 14;
+  common.NullableDouble power_transfer = 15;
+  bool predicted_data = 16;
+}
+
+message Contract {
+  string guid = 1;
+  string number = 2;
+  common.Date date = 3;
+  string type = 4;
+}
+
+message TechConnectionAct {
+  string guid = 1;
+  string number = 2;
+  common.Date date = 3;
+  double max_power = 4;
+  string address = 5;
+  string reliability_category = 6;
+}

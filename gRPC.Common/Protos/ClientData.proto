@@ -1,0 +1,251 @@
+syntax = "proto3";
+
+import "Protos/Common.proto";
+import "Protos/Entity.proto";
+
+option csharp_namespace = "gRPC.Common.Protos";
+
+package ru.bit76.energymng.server.grpc.data.client;
+
+message MeteringPointResponse {
+  message MeteringPoint {
+    int64 id = 1;
+    string name = 2;
+  }
+
+  oneof response {
+    MeteringPoint result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message CalculationRequest {
+  string employee_guid = 1;
+  int32 region_code = 2;
+  common.Date d_beg = 3;
+  common.Date d_end = 4;
+}
+
+message CalculationResponse {
+  oneof response {
+    entity.Calculation result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message MeteringPointCalculationKey {
+  int32 voltage_id = 1;
+  int32 power_id = 2;
+  int32 contract_type = 3;
+  string market_participant_guid = 4;
+}
+
+message MeteringPointCalculationRequest {
+  string metering_point_guid = 1;
+  common.NullableInteger cur_price_category = 2;
+  string calculation_guid = 3;
+  repeated MeteringPointCalculationKey mpc_keys = 4;
+}
+
+message MeteringPointCalculationResponse {
+  message MeteringPointCalculationData {
+    repeated entity.MeteringPointCalculation metering_point_calculation = 1;
+  }
+
+  oneof response {
+    MeteringPointCalculationData result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message PriceCategoryCalculationRequest {
+  repeated entity.PriceCategoryCalculation price_category_calc = 1;
+}
+
+message PriceCategoryCalculationResponse {
+  message PriceCategoryCalculationData {
+    repeated entity.PriceCategoryCalculation price_category_calc = 1;
+  }
+
+  oneof response {
+    PriceCategoryCalculationData result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message HourlyConsumptionRequest {
+  string metering_point_guid = 1;
+  common.Date d_beg = 2;
+  common.Date d_end = 3;
+}
+
+message SaveHourlyConsumptionRequest {
+  string metering_point_guid = 1;
+  repeated common.DateTimeValue consumptionData = 2;
+}
+
+message CombinedMeteringPointRequest {
+  repeated string metering_point_guid = 1;
+}
+
+message CombinedMeteringPointResponse {
+  oneof response {
+    string result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message CalculationModelResponse {
+  message RepeatedCalculationModelData {
+    repeated CalculationModelData data = 1;
+  }
+  message CalculationModelData {
+    string region_name = 1;
+    string market_participant_name = 2;
+    string org_name = 3;
+    string metering_point_name = 4;
+    string metering_point_guid = 5;
+    string voltage_name = 6;
+    string power_name = 7;
+    string contract_type = 8;
+    repeated entity.PriceCategoryCalculation price_category_calculations = 9;
+  }
+
+  oneof response {
+    RepeatedCalculationModelData result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message DetailedCalculationResponse {
+  message RepeatedCalculationResultModel {
+    repeated CalculationResultModel data = 1;
+  }
+  message CalculationResultModel {
+    string region_name = 1;
+    string market_participant_name = 2;
+    string org_name = 3;
+    string metering_point_name = 4;
+    string metering_point_guid = 5;
+    string voltage_name = 6;
+    string power_name = 7;
+    string contract_type = 8;
+    common.Date d_beg = 9;
+    common.Date d_end = 10;
+    repeated PCCalcResultModel results = 11;
+  }
+  message PCCalcResultModel {
+    int32 price_category_id = 1;
+    string consumption = 2;
+    string total_price = 3;
+    string rate = 4;
+    bool most_profitable = 5;
+    string profit_from_most_profitable = 6;
+    string profit_from_current = 7;
+    bool predicted_data = 8;
+  }
+
+  oneof response {
+    RepeatedCalculationResultModel result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message CalculationMainResResponse {
+  message CalculationMainResData{
+    string currentPrice = 1;
+    string most_profitable = 2;
+    string profit = 3;
+    bool predicted_data = 4;
+  }
+  oneof response {
+    CalculationMainResData result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message MeteringPointGuidAndDateRequest {
+  string metering_point_guid = 1;
+  common.Date date = 2;
+}
+
+message MeteringPointRequiredParamsResponse {
+  message MeteringPointRequiredParams {
+    int32 price_category_id = 1;
+    int32 power_id = 2;
+    int32 voltage_id = 3;
+    int32 contract_type = 4;
+  }
+  oneof response {
+    MeteringPointRequiredParams result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message GuidListResponse {
+  oneof response {
+    common.GuidList result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message SaveElectricityCostsRequest {
+  repeated ElectricityCosts data = 1;
+
+  message ElectricityCosts {
+    string metering_point_guid = 1;
+    common.Date date = 2;
+    common.NullableDouble fact = 3;
+    common.NullableDouble min = 4;
+    common.NullableDouble predicted = 5;
+  }
+}
+
+message SaveCalculationRateRequest {
+  repeated CalculationRate data = 1;
+
+  message CalculationRate {
+    string metering_point_guid = 1;
+    common.Date date = 2;
+    int32 power_id = 3;
+    int32 voltage_id = 4;
+    string market_participant_guid = 5;
+    int32 contract_type_id = 6;
+    int32 price_category_id = 7;
+    double rate = 8;
+  }
+}
+
+message BooleanResponse {
+  oneof response {
+    bool result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+service PredictionDataService {
+  rpc SavePredictionHourlyConsumption (SaveHourlyConsumptionRequest) returns (common.BaseResponse);
+}
+
+service ClientDataService {
+  rpc IsMeteringPointExists (common.Guid) returns (BooleanResponse);
+  rpc IsHourlyConsumptionExists (MeteringPointGuidAndDateRequest) returns (BooleanResponse);
+  rpc SaveCombinedMeteringPoint (CombinedMeteringPointRequest) returns (CombinedMeteringPointResponse);
+  rpc GetHourlyConsumption (HourlyConsumptionRequest) returns (common.DateTimeValueResponse);
+  rpc GetPredictionHourlyConsumption (HourlyConsumptionRequest) returns (common.DateTimeValueResponse);
+  rpc GetMeteringPointRequiredParams (MeteringPointGuidAndDateRequest) returns (MeteringPointRequiredParamsResponse);
+  rpc SaveAllElectricityCosts (SaveElectricityCostsRequest) returns (common.BaseResponse);
+  rpc SaveHourlyConsumption (SaveHourlyConsumptionRequest) returns (common.BaseResponse);
+  rpc SaveCalculationRate (SaveCalculationRateRequest) returns (common.BaseResponse);
+}
+
+service CalculationDataService {
+  rpc SaveCalculation (CalculationRequest) returns (CalculationResponse);
+  rpc DeleteCalculation (common.Guid) returns (common.BaseResponse);
+  rpc GetCalculation (common.Guid) returns (CalculationModelResponse);
+  rpc GetDetailedCalculationResult (common.Guid) returns (DetailedCalculationResponse);
+  rpc GetMainCalculationResult (common.Guid) returns (CalculationMainResResponse);
+  rpc GetAllCalculations (common.Guid) returns (GuidListResponse);
+  rpc SaveMeteringPointCalculation (MeteringPointCalculationRequest) returns (MeteringPointCalculationResponse);
+  rpc SavePriceCategoryCalculation (PriceCategoryCalculationRequest) returns (PriceCategoryCalculationResponse);
+}

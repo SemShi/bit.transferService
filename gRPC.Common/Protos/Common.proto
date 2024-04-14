@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+option csharp_namespace = "gRPC.Common.Protos";
+
+package ru.bit76.energymng.server.grpc.common;
+
+message BaseResponse{
+  oneof response {
+    bool task_submitted = 1;
+    CommonError error = 2;
+  }
+}
+
+message CommonError {
+  string error_code = 1;
+  string error_text = 2;
+}
+
+
+message Date {
+  int32 year = 3;
+  int32 month = 4;
+  int32 day = 5;
+}
+
+message Time {
+  int32 hour = 1;
+  int32 minute = 2;
+  int32 second = 3;
+}
+
+message DateTime {
+  Date date = 1;
+  Time time = 2;
+}
+
+message YearMonth {
+  int32 year = 1;
+  int32 month = 2;
+}
+
+message Empty {
+}
+
+message Integer {
+  int32 value = 1;
+}
+
+message Long {
+  int64 value = 1;
+}
+
+message String {
+  string value = 1;
+}
+
+message NullableInteger {
+  oneof value {
+    int32 data = 1;
+    bool null = 2;
+  }
+}
+
+message NullableDouble {
+  oneof value {
+    double data = 1;
+    bool null = 2;
+  }
+}
+
+message NullableString {
+  oneof value {
+    string data = 1;
+    bool null = 2;
+  }
+}
+
+message NullableBoolean {
+  oneof value {
+    bool data = 1;
+    bool null = 2;
+  }
+}
+
+message Boolean {
+  bool value = 1;
+}
+
+message Guid {
+  string value = 1;
+}
+
+message GuidList {
+  repeated string guids = 1;
+}
+
+message DateValue {
+  Date date = 1;
+  double value = 2;
+}
+
+message DateValueResponse {
+  message DateValueData {
+    repeated DateValue date_value = 1;
+  }
+
+  oneof response {
+    DateValueData result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message DateTimeValue {
+  DateTime date_time = 1;
+  double value = 2;
+}
+
+message DateTimeValueResponse {
+  message DateTimeValueData {
+    repeated DateTimeValue date_time_value = 1;
+  }
+
+  oneof response {
+    DateTimeValueData result = 1;
+    common.CommonError error = 2;
+  }
+}
+
+message DictionaryData {
+  int32 id = 1;
+  string value = 2;
+  bool is_actual = 3;
+}
