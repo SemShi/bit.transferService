@@ -1,0 +1,27 @@
+syntax = "proto3";
+import "Protos/Common.proto";
+import "Protos/ClientData.proto";
+
+option csharp_namespace = "gRPC.Common.Protos";
+
+package ru.bit76.energymng.server.grpc.serviceconnector;
+
+message CentralServerRequest {
+	string request_guid = 1;
+	repeated common.DateTimeValue date_time_value = 2;
+}
+
+message ClientServerRequest {
+	string request_guid = 1;
+	repeated common.DateTimeValue date_time_value = 2;
+}
+
+service CentralServiceGrpc {
+  rpc PredictConsumptionOnServer (CentralServerRequest) returns (common.BaseResponse); // Для получения данных от клиентского сервиса
+  rpc SavePredictedData (CentralServerRequest) returns (common.BaseResponse); //Для сохранения данных от модуля ИИ
+  rpc GetPredictedData (CentralServerRequest) returns (common.BaseResponse); //Для получения данных модулем ИИ
+}
+
+service ChildServiceGrpc {
+	rpc SaveConsumptionResult (ClientServerRequest) returns (common.BaseResponse); // Для получения у клиента прогноза
+}
