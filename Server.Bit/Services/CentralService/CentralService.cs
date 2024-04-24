@@ -20,10 +20,5 @@ namespace Server.Bit.Services
         {
             throw new NotImplementedException();
         }
-
-        public override Task<BaseResponse> GetPredictedData(CentralServerRequest request, ServerCallContext context)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

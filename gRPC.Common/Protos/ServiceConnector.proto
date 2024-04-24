@@ -18,8 +18,6 @@ message ClientServerRequest {
 
 service CentralServiceGrpc {
   rpc PredictConsumptionOnServer (CentralServerRequest) returns (common.BaseResponse); // Для получения данных от клиентского сервиса
-  rpc SavePredictedData (CentralServerRequest) returns (common.BaseResponse); //Для сохранения данных от модуля ИИ
-  rpc GetPredictedData (CentralServerRequest) returns (common.BaseResponse); //Для получения данных модулем ИИ
 }
 
 service ChildServiceGrpc {

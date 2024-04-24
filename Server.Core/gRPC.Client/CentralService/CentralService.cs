@@ -30,11 +30,11 @@ namespace Server.Core.gRPC.Client.CentralService
             return response;
         }
 
-        public async Task<DateTimeValueResponse> SendDataToAi(HourlyConsumptionRequest request, ServerCallContext context, string serverAddress)
+        public async Task<BaseResponse> SendDataToAi(PredictConsumptionRequest request, ServerCallContext context, string serverAddress)
         {
             using var channel = GrpcChannel.ForAddress(serverAddress);
-            var client = new ClientDataService.ClientDataServiceClient(channel);
-            var response = await client.GetHourlyConsumptionAsync(request);
+            var client = new ConsumptionService.ConsumptionServiceClient(channel);
+            var response = await client.PredictConsumptionAsync(request);
             return response;
         }
     }
