@@ -13,6 +13,7 @@ namespace Server.Client.Services
         private readonly ILogger<PredictConsumptionService> _logger;
         private readonly IConfiguration _cfg;
         private readonly IDomainClientDataService _domainClientDataService;
+        private readonly ICentralService _centralService;
         private readonly INormalizeDataService _normalizeDataService;
         private readonly ISqliteService _databaseService;
 
@@ -21,13 +22,14 @@ namespace Server.Client.Services
             IConfiguration cfg,
             IDomainClientDataService domainClientDataService,
             INormalizeDataService normalizeDataService, 
-            ISqliteService databaseService)
+            ISqliteService databaseService, ICentralService centralService)
         {
             _logger = logger;
             _cfg = cfg;
             _domainClientDataService = domainClientDataService;
             _normalizeDataService = normalizeDataService;
             _databaseService = databaseService;
+            _centralService = centralService;
         }
 
         public override async Task<BaseResponse> PredictConsumption(PredictConsumptionRequest request, ServerCallContext context)
@@ -76,9 +78,22 @@ namespace Server.Client.Services
             if (!normalizedData.Success)
                 return Helpers.GetBaseResponseError("0", ((ErrorResult<RepeatedField<DateTimeValue>>)normalizedData).Message);
 
-            //отправляем данные на центральный сервис
+            var centralServiceAddress =
+                _cfg.GetSection("Servers").GetSection("CentralService").Value ?? string.Empty;
 
-            return await Task.FromResult(new BaseResponse());
+            if (centralServiceAddress == string.Empty)
+                return Helpers.GetBaseResponseError("0", "");
+
+            var serverRequest = new CentralServerRequest()
+            {
+                RequestGuid = request.RequestGuid,
+                DateTimeValue = { normalizedData.Data }
+            };
+
+            var responseCentralService =
+                await _centralService.SendDataToServer(serverRequest, context, centralServiceAddress);
+
+            return responseCentralService;
         }
     }
 }

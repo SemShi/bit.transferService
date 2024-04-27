@@ -1,5 +1,6 @@
 using Server.Client.Services;
 using Server.Core.gRPC.Client;
+using Server.Core.gRPC.Client.CentralService;
 using Server.Core.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.MapGrpcService<PredictConsumptionService>();
 app.MapGrpcService<ClientService>();
+app.MapGrpcService<CentralService>();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 
 app.Run();
