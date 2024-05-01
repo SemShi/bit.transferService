@@ -9,13 +9,13 @@ namespace Server.Bit.Services
     {
         private readonly ILogger<CentralService> _logger;
         private readonly IConfiguration _cfg;
-        private readonly ICentralService _centralService;
+        private readonly Server.Core.gRPC.Client.ICentralService _centralService;
         private readonly ISqliteService _databaseService;
 
         public CentralService(
             ILogger<CentralService> logger, 
             IConfiguration cfg, 
-            ICentralService centralService, 
+            Server.Core.gRPC.Client.ICentralService centralService, 
             ISqliteService databaseService)
         {
             _logger = logger;
@@ -30,8 +30,31 @@ namespace Server.Bit.Services
 
             if(!request.DateTimeValue.Any())
                 return Helpers.GetBaseResponseError("0", "Пустой набор данных");
+            
+            var dbResponse = _databaseService.SaveClientData(request);
+            if (!dbResponse.Result.Success)
+                return Helpers.GetBaseResponseError("0", "");
 
-            var dbResponse = _databaseService.
+            var newRequest = new PredictConsumptionRequest()
+            {
+                //Заполнить модель
+                RequestGuid = request.RequestGuid,
+                StartDate = request.StartDate,
+                
+            };
+            
+            var aiServiceAddress =
+                _cfg.GetSection("Servers").GetSection("AIService").Value ?? string.Empty;
+
+            if (aiServiceAddress == string.Empty)
+                return Helpers.GetBaseResponseError("0", "");
+
+            var aiResponse = await _centralService.SendDataToAi(newRequest, context, aiServiceAddress);
+
+            if (!aiResponse.TaskSubmitted)
+                return Helpers.GetBaseResponseError(aiResponse.Error.ErrorCode, aiResponse.Error.ErrorText);
+            
+            return Helpers.GetBaseResponseSuccess();
         }
     }
 }

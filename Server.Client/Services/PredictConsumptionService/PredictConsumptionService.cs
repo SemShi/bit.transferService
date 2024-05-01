@@ -87,6 +87,7 @@ namespace Server.Client.Services
             var serverRequest = new CentralServerRequest()
             {
                 RequestGuid = request.RequestGuid,
+                StartDate = request.StartDate,
                 DateTimeValue = { normalizedData.Data }
             };
 

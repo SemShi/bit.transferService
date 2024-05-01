@@ -1,6 +1,5 @@
 syntax = "proto3";
 import "Protos/Common.proto";
-import "Protos/ClientData.proto";
 
 option csharp_namespace = "gRPC.Common.Protos";
 
@@ -8,7 +7,8 @@ package ru.bit76.energymng.server.grpc.serviceconnector;
 
 message CentralServerRequest {
 	string request_guid = 1;
-	repeated common.DateTimeValue date_time_value = 2;
+	common.Date start_date = 2;
+	repeated common.DateTimeValue date_time_value = 3;
 }
 
 message ClientServerRequest {
@@ -17,9 +17,9 @@ message ClientServerRequest {
 }
 
 service CentralServiceGrpc {
-  rpc PredictConsumptionOnServer (CentralServerRequest) returns (common.BaseResponse); // Для получения данных от клиентского сервиса
+  rpc PredictConsumptionOnServer (CentralServerRequest) returns (common.BaseResponse); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 }
 
 service ChildServiceGrpc {
-	rpc SaveConsumptionResult (ClientServerRequest) returns (common.BaseResponse); // Для получения у клиента прогноза
+	rpc SaveConsumptionResult (ClientServerRequest) returns (common.BaseResponse); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 }

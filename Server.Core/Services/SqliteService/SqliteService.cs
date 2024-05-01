@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using gRPC.Common.Protos;
+using Microsoft.Extensions.Logging;
+using Guid = System.Guid;
 
 namespace Server.Core.Services
 {
@@ -29,6 +31,38 @@ namespace Server.Core.Services
             return response is null
                 ? new ErrorResult<RequestСoefficientMinMax>("")
                 : new SuccessResult<RequestСoefficientMinMax>(response);
+        }
+
+        public async Task<Result> SaveClientData(CentralServerRequest request)
+        {
+            var rows = request.DateTimeValue
+                    .Select(row => new PredictionRow(row, request.RequestGuid))
+                    .ToList();
+
+            try
+            {
+                await _context.PredictionRows.AddRangeAsync(rows);
+            }
+            catch (Exception ex)
+            {
+                return new ErrorResult(ex.Message);
+            }
+
+            return new SuccessResult();
+        }
+
+        public Task<Result<PredictionRow[]>> GetClientData(HourlyConsumptionRequest request)
+        {
+            //request.
+            throw new NotImplementedException();
+        }
+
+        public async Task<Result<PredictionRow[]>> GetClientData(string requestId)
+        {
+            if(requestId == Guid.Empty.ToString()) return new ErrorResult<PredictionRow[]>("");
+            var response = _context.PredictionRows.Where(row => row.Id == requestId).ToArray();
+
+            return await Task.FromResult(new SuccessResult<PredictionRow[]>(response));
         }
     }
 }
