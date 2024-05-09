@@ -3,7 +3,7 @@ using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
 
-namespace Server.Core.gRPC.Client.CentralService
+namespace Server.Core.gRPC.Client
 {
     public class CentralService : ICentralService
     {

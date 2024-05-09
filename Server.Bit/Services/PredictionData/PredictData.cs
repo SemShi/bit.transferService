@@ -2,7 +2,6 @@
 using Grpc.Core;
 using Server.Core;
 using Server.Core.Services;
-using DateTime = System.DateTime;
 
 namespace Server.Bit.Services
 {
@@ -10,21 +9,43 @@ namespace Server.Bit.Services
     {
         private readonly ILogger<PredictData> _logger;
         private readonly ISqliteService _databaseService;
+        private readonly Core.gRPC.Client.ICentralService _centralService;
+        private readonly IConfiguration _cfg;
 
-        public PredictData(ILogger<PredictData> logger, ISqliteService databaseService)
+        public PredictData(
+            ILogger<PredictData> logger, 
+            ISqliteService databaseService, 
+            Core.gRPC.Client.ICentralService centralService, 
+            IConfiguration cfg)
         {
             _logger = logger;
             _databaseService = databaseService;
+            _centralService = centralService;
+            _cfg = cfg;
         }
 
-        public async Task<BaseResponse> SavePredictionHourlyConsumption(SaveHourlyConsumptionRequest request, ServerCallContext context)
+        public override async Task<BaseResponse> SavePredictionHourlyConsumption(SaveHourlyConsumptionRequest request, ServerCallContext context)
         {
-            //How to sava data without requestId? Wtf
-            // var rows = request.ConsumptionData.Select(row => new PredictionRow(row.DateTime, row.Value, request.)
-            // {
-            //     DateTime = new DateTime()
-            // }).ToList();
-            return Helpers.GetBaseResponseSuccess();
+            var responseDb = await _databaseService.SavePrediction(request);
+            if (!responseDb.Success)
+                return Helpers.GetBaseResponseError("0", ((ErrorResult)responseDb).Message);
+
+            var clientServiceAddress =
+                _cfg.GetSection("Servers").GetSection("CentralService").Value ?? string.Empty;
+
+            if (clientServiceAddress == string.Empty)
+                return Helpers.GetBaseResponseError("0", "");
+
+            var clientRequest = new ClientServerRequest()
+            {
+                RequestGuid = "",
+                MeteringPointGuid = request.MeteringPointGuid,
+                DateTimeValue = { request.ConsumptionData }
+            };
+
+            var sendDataToClientResponse = 
+                await _centralService.SendDataToClient(clientRequest, context, clientServiceAddress);
+            return sendDataToClientResponse;
         }
     }
 }

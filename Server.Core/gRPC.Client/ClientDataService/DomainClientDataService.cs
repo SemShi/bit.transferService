@@ -21,5 +21,13 @@ namespace Server.Core.gRPC.Client
             var response = await client.GetHourlyConsumptionAsync(request);
             return response;
         }
+
+        public async Task<BaseResponse> SaveHourlyConsumption(SaveHourlyConsumptionRequest request, ServerCallContext context, string serverAddress)
+        {
+            using var channel = GrpcChannel.ForAddress(serverAddress);
+            var client = new ClientDataService.ClientDataServiceClient(channel);
+            var response = await client.SaveHourlyConsumptionAsync(request);
+            return response;
+        }
     }
 }

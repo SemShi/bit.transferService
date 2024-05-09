@@ -5,6 +5,7 @@ using Grpc.Core;
 using Server.Core;
 using Server.Core.gRPC.Client;
 using Server.Core.Services;
+using String = System.String;
 
 namespace Server.Client.Services
 {
@@ -16,13 +17,14 @@ namespace Server.Client.Services
         private readonly ICentralService _centralService;
         private readonly INormalizeDataService _normalizeDataService;
         private readonly ISqliteService _databaseService;
+        protected readonly IWebHostEnvironment _hostEnvironment;
 
         public PredictConsumptionService(
             ILogger<PredictConsumptionService> logger,
             IConfiguration cfg,
             IDomainClientDataService domainClientDataService,
             INormalizeDataService normalizeDataService, 
-            ISqliteService databaseService, ICentralService centralService)
+            ISqliteService databaseService, ICentralService centralService, IWebHostEnvironment hostEnvironment)
         {
             _logger = logger;
             _cfg = cfg;
@@ -30,15 +32,21 @@ namespace Server.Client.Services
             _normalizeDataService = normalizeDataService;
             _databaseService = databaseService;
             _centralService = centralService;
+            _hostEnvironment = hostEnvironment;
         }
 
         public override async Task<BaseResponse> PredictConsumption(PredictConsumptionRequest request, ServerCallContext context)
         {
+            if(request.RequestGuid == String.Empty)
+                return Helpers.GetBaseResponseError("0", "Empty request guid");
             var clientServiceAddress =
                 _cfg.GetSection("Servers").GetSection("ClientService").Value ?? string.Empty;
 
-            if (clientServiceAddress == string.Empty)
-                return Helpers.GetBaseResponseError("0", "");
+            if (!_hostEnvironment.IsDevelopment())
+            {
+                if (clientServiceAddress == string.Empty)
+                    return Helpers.GetBaseResponseError("0", "");
+            }
 
             var requestModel = new HourlyConsumptionRequest()
             {
@@ -50,8 +58,19 @@ namespace Server.Client.Services
             DateTimeValueResponse clientServiceResponse;
             try
             {
-                clientServiceResponse =
-                    await _domainClientDataService.GetHourlyConsumption(requestModel, context, clientServiceAddress);
+                if (!_hostEnvironment.IsDevelopment())
+                    clientServiceResponse =
+                        await _domainClientDataService.GetHourlyConsumption(requestModel, context,
+                            clientServiceAddress);
+                else
+                    clientServiceResponse = new DateTimeValueResponse()
+                    {
+                        Error = null,
+                        Result = new DateTimeValueResponse.Types.DateTimeValueData()
+                        {
+                            DateTimeValue = { Helpers.GenerateValues(requestModel.DEnd) }
+                        }
+                    };
             }
             catch (Exception ex)
             {
@@ -65,7 +84,7 @@ namespace Server.Client.Services
                 return Helpers.GetBaseResponseError("0", ((ErrorResult<RequestСoefficientMinMax>)coefficients).Message);
 
 
-            coefficients.Data.Id = request.RequestGuid;
+            coefficients.Data.RequestId = request.RequestGuid;
 
             var dbResponse = await _databaseService.AddCoefficients(coefficients.Data);
 

@@ -14,6 +14,7 @@ message CentralServerRequest {
 message ClientServerRequest {
 	string request_guid = 1;
 	repeated common.DateTimeValue date_time_value = 2;
+	string metering_point_guid =3;
 }
 
 service CentralServiceGrpc {

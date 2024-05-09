@@ -40,7 +40,6 @@ namespace Server.Bit.Services
                 //Заполнить модель
                 RequestGuid = request.RequestGuid,
                 StartDate = request.StartDate,
-                
             };
             
             var aiServiceAddress =

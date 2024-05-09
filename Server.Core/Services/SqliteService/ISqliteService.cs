@@ -1,4 +1,5 @@
-﻿using gRPC.Common.Protos;
+﻿using Google.Protobuf.Collections;
+using gRPC.Common.Protos;
 
 namespace Server.Core.Services
 {
@@ -8,6 +9,7 @@ namespace Server.Core.Services
         Task<Result<RequestСoefficientMinMax>> GetCoefficientsByRequestId(string requestId);
 
         Task<Result> SaveClientData(CentralServerRequest request);
-        Task<Result<PredictionRow[]>> GetClientData(HourlyConsumptionRequest request);
+        Task<Result<RepeatedField<DateTimeValue>>> GetClientData(HourlyConsumptionRequest request);
+        Task<Result> SavePrediction(SaveHourlyConsumptionRequest request);
     }
 }

@@ -1,13 +1,13 @@
 ﻿using Google.Protobuf.Collections;
 using gRPC.Common.Protos;
 using Microsoft.Extensions.Logging;
+using Guid = System.Guid;
 
 namespace Server.Core.Services
 {
     public class NormalizeDataService : INormalizeDataService
     {
         private readonly ILogger<NormalizeDataService> _logger;
-        private readonly ISqliteService _databaseService;
 
         public NormalizeDataService(
             ILogger<NormalizeDataService> logger)
