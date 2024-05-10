@@ -14,20 +14,46 @@ namespace Server.Core.gRPC.Client
             _logger = logger;
         }
 
-        public async Task<DateTimeValueResponse> GetHourlyConsumption(HourlyConsumptionRequest request, ServerCallContext context, string serverAddress)
+        public async Task<Result<DateTimeValueResponse>> GetHourlyConsumption(HourlyConsumptionRequest request, ServerCallContext context, string serverAddress)
         {
+            _logger.LogInformation("Вызываем удаленную процедуру {1} по адресу {0}..", serverAddress, "GetHourlyConsumption");
             using var channel = GrpcChannel.ForAddress(serverAddress);
             var client = new ClientDataService.ClientDataServiceClient(channel);
-            var response = await client.GetHourlyConsumptionAsync(request);
-            return response;
+
+            DateTimeValueResponse response;
+            try
+            {
+                response = await client.GetHourlyConsumptionAsync(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка при попытке обращения к методу {0}. {1}", "GetHourlyConsumption", ex.Message);
+                return new ErrorResult<DateTimeValueResponse>("");
+            }
+
+            _logger.LogInformation("Ответ получен.");
+            return new SuccessResult<DateTimeValueResponse>(response);
         }
 
-        public async Task<BaseResponse> SaveHourlyConsumption(SaveHourlyConsumptionRequest request, ServerCallContext context, string serverAddress)
+        public async Task<Result<BaseResponse>> SaveHourlyConsumption(SaveHourlyConsumptionRequest request, ServerCallContext context, string serverAddress)
         {
+            _logger.LogInformation("Вызываем удаленную процедуру {1} по адресу {0}..", serverAddress, "SaveHourlyConsumption");
             using var channel = GrpcChannel.ForAddress(serverAddress);
             var client = new ClientDataService.ClientDataServiceClient(channel);
-            var response = await client.SaveHourlyConsumptionAsync(request);
-            return response;
+
+            BaseResponse response;
+            try
+            {
+                response = await client.SaveHourlyConsumptionAsync(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Ошибка при попытке обращения к методу {0}. {1}", "SaveHourlyConsumption", ex.Message);
+                return new ErrorResult<BaseResponse>("");
+            }
+
+            _logger.LogInformation("Ответ получен.");
+            return new SuccessResult<BaseResponse>(response);
         }
     }
 }

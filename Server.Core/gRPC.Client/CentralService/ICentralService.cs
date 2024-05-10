@@ -12,7 +12,7 @@ namespace Server.Core.gRPC.Client
         /// <param name="context"></param>
         /// <param name="serverAddress"></param>
         /// <returns></returns>
-        Task<BaseResponse> SendDataToServer(CentralServerRequest request, ServerCallContext context, string serverAddress);
+        Task<Result<BaseResponse>> SendDataToServer(CentralServerRequest request, ServerCallContext context, string serverAddress);
 
         /// <summary>
         /// Используется в Server.Bit
@@ -21,7 +21,7 @@ namespace Server.Core.gRPC.Client
         /// <param name="context"></param>
         /// <param name="serverAddress"></param>
         /// <returns></returns>
-        Task<BaseResponse> SendDataToClient(ClientServerRequest request, ServerCallContext context, string serverAddress);
+        Task<Result<BaseResponse>> SendDataToClient(ClientServerRequest request, ServerCallContext context, string serverAddress);
 
         /// <summary>
         /// Используется в Server.Bit
@@ -30,6 +30,6 @@ namespace Server.Core.gRPC.Client
         /// <param name="context"></param>
         /// <param name="serverAddress"></param>
         /// <returns></returns>
-        Task<BaseResponse> SendDataToAi(PredictConsumptionRequest request, ServerCallContext context, string serverAddress);
+        Task<Result<BaseResponse>> SendDataToAi(PredictConsumptionRequest request, ServerCallContext context, string serverAddress);
     }
 }

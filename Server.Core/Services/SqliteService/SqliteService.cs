@@ -19,21 +19,24 @@ namespace Server.Core.Services
         public async Task<Result> AddCoefficients(RequestСoefficientMinMax model)
         {
             if (!model.ValidateModel()) return new ErrorResult("В модели не хватает данных");
+            _logger.LogInformation("Пытаемся сохранить коэффициенты в базу..");
             try
             {
                 await _context.Сoefficients.AddAsync(model);
                 await _context.SaveChangesAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                UndetouchEntities();
+                UndetouchEntities(ex);
                 return new ErrorResult("Ошибка при сохранинии в базху данных");
             }
+            _logger.LogInformation("Данные сохранены!");
             return new SuccessResult();
         }
 
         public async Task<Result> SavePrediction(SaveHourlyConsumptionRequest request)
         {
+            _logger.LogInformation("Пытаемся сохранить спрогнозированные данные..");
             //#TODO нужен requestId
             if (!request.ConsumptionData.Any())
                 return new ErrorResult("0");
@@ -45,17 +48,18 @@ namespace Server.Core.Services
                 await _context.PredictedRows.AddRangeAsync(dataToModels);
                 await _context.SaveChangesAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                UndetouchEntities();
+                UndetouchEntities(ex);
                 return new ErrorResult("Ошибка при сохранинии в базху данных");
             }
-
+            _logger.LogInformation("Данные сохранены!");
             return new SuccessResult();
         }
 
-        private void UndetouchEntities()
+        private void UndetouchEntities(Exception ex)
         {
+            _logger.LogError(ex, "Ошибка при сохранении в базу данных");
             var undetachedEntriesCopy = _context.ChangeTracker.Entries()
                 .Where(e => e.State != EntityState.Detached)
                 .ToList();
@@ -66,10 +70,15 @@ namespace Server.Core.Services
 
         public async Task<Result<RequestСoefficientMinMax>> GetCoefficientsByRequestId(string requestId)
         {
+            _logger.LogInformation("Пытаемся получить данные по коэффициентам. RequestId: {0}", requestId);
             if(requestId == Guid.Empty.ToString()) return new ErrorResult<RequestСoefficientMinMax>("");
             var response = 
                 await _context.Сoefficients
                 .FindAsync(requestId);
+            if(response != null)
+                _logger.LogInformation("Данные получены!");
+            else
+                _logger.LogWarning("Не удалось найти данные по коэффициентам. RequestId: {0}", requestId);
 
             return response is null
                 ? new ErrorResult<RequestСoefficientMinMax>("")
@@ -78,6 +87,7 @@ namespace Server.Core.Services
 
         public async Task<Result> SaveClientData(CentralServerRequest request)
         {
+            _logger.LogInformation("Пытаемся сохранить набор данных от клиентского сервиса..");
             var rows = request.DateTimeValue
                     .Select(row => new ClientData(row, request.RequestGuid))
                     .ToList();
@@ -89,18 +99,25 @@ namespace Server.Core.Services
             }
             catch (Exception ex)
             {
-                UndetouchEntities();
+                UndetouchEntities(ex);
                 return new ErrorResult(ex.Message);
             }
-
+            _logger.LogInformation("Данные сохранены!");
             return new SuccessResult();
         }
 
         public async Task<Result<RepeatedField<DateTimeValue>>> GetClientData(HourlyConsumptionRequest request)
         {
             // Нужен request_id
-
+            _logger.LogInformation("Пытаемся получить набор данных от клиентского сервиса..");
             var dbResponse = await _context.ClientDataRows.Where(x => x.RequestId == "").ToArrayAsync();
+
+            if (!dbResponse.Any())
+            {
+                _logger.LogWarning("Не удалось найти данные.");
+                return new ErrorResult<RepeatedField<DateTimeValue>>("Не удалось найти данные.");
+            }
+                
 
             var resultDb = new RepeatedField<DateTimeValue>();
             foreach (var row in dbResponse)
@@ -127,14 +144,6 @@ namespace Server.Core.Services
             }
 
             return new SuccessResult<RepeatedField<DateTimeValue>>(resultDb);
-        }
-
-        public async Task<Result<PredictedRow[]>> GetClientData(string requestId)
-        {
-            if(requestId == Guid.Empty.ToString()) return new ErrorResult<PredictedRow[]>("");
-            var response = _context.PredictedRows.Where(row => row.RequestId == requestId).ToArray();
-
-            return await Task.FromResult(new SuccessResult<PredictedRow[]>(response));
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Server.Bit.Services
 
         public override async Task<BaseResponse> SavePredictionHourlyConsumption(SaveHourlyConsumptionRequest request, ServerCallContext context)
         {
+            _logger.LogInformation("Вызвана процедура {0}", "SavePredictionHourlyConsumption");
             var responseDb = await _databaseService.SavePrediction(request);
             if (!responseDb.Success)
                 return Helpers.GetBaseResponseError("0", ((ErrorResult)responseDb).Message);
@@ -45,7 +46,7 @@ namespace Server.Bit.Services
 
             var sendDataToClientResponse = 
                 await _centralService.SendDataToClient(clientRequest, context, clientServiceAddress);
-            return sendDataToClientResponse;
+            return sendDataToClientResponse.Data;
         }
     }
 }

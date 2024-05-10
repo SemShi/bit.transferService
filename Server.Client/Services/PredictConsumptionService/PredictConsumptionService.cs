@@ -39,6 +39,9 @@ namespace Server.Client.Services
         {
             if(request.RequestGuid == String.Empty)
                 return Helpers.GetBaseResponseError("0", "Empty request guid");
+
+            _logger.LogInformation("Вызвана процедура {0}", "PredictConsumption");
+
             var clientServiceAddress =
                 _cfg.GetSection("Servers").GetSection("ClientService").Value ?? string.Empty;
 
@@ -55,7 +58,7 @@ namespace Server.Client.Services
                 MeteringPointGuid = request.MeteringPointGuid
             };
 
-            DateTimeValueResponse clientServiceResponse;
+            Result<DateTimeValueResponse> clientServiceResponse;
             try
             {
                 if (!_hostEnvironment.IsDevelopment())
@@ -63,14 +66,14 @@ namespace Server.Client.Services
                         await _domainClientDataService.GetHourlyConsumption(requestModel, context,
                             clientServiceAddress);
                 else
-                    clientServiceResponse = new DateTimeValueResponse()
-                    {
-                        Error = null,
-                        Result = new DateTimeValueResponse.Types.DateTimeValueData()
+                    clientServiceResponse = new SuccessResult<DateTimeValueResponse>( new DateTimeValueResponse()
                         {
-                            DateTimeValue = { Helpers.GenerateValues(requestModel.DEnd) }
-                        }
-                    };
+                            Error = null,
+                            Result = new DateTimeValueResponse.Types.DateTimeValueData()
+                            {
+                                DateTimeValue = { Helpers.GenerateValues(requestModel.DEnd) }
+                            }
+                        });
             }
             catch (Exception ex)
             {
@@ -78,7 +81,7 @@ namespace Server.Client.Services
                 return Helpers.GetBaseResponseError("0", "");
             }
 
-            var coefficients = await _normalizeDataService.GetMinMaxDictionary(clientServiceResponse.Result.DateTimeValue);
+            var coefficients = await _normalizeDataService.GetMinMaxDictionary(clientServiceResponse.Data.Result.DateTimeValue);
 
             if (!coefficients.Success)
                 return Helpers.GetBaseResponseError("0", ((ErrorResult<RequestСoefficientMinMax>)coefficients).Message);
@@ -92,7 +95,7 @@ namespace Server.Client.Services
                 return Helpers.GetBaseResponseError("0", ((ErrorResult)dbResponse).Message);
 
             var normalizedData =
-                await _normalizeDataService.Normalize(clientServiceResponse.Result.DateTimeValue, coefficients.Data);
+                await _normalizeDataService.Normalize(clientServiceResponse.Data.Result.DateTimeValue, coefficients.Data);
 
             if (!normalizedData.Success)
                 return Helpers.GetBaseResponseError("0", ((ErrorResult<RepeatedField<DateTimeValue>>)normalizedData).Message);
@@ -113,7 +116,7 @@ namespace Server.Client.Services
             var responseCentralService =
                 await _centralService.SendDataToServer(serverRequest, context, centralServiceAddress);
 
-            return responseCentralService;
+            return responseCentralService.Data;
         }
     }
 }

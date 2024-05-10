@@ -18,23 +18,34 @@ namespace Server.Core.Services
 
         public async Task<Result<RequestСoefficientMinMax>> GetMinMaxDictionary(RepeatedField<DateTimeValue> data)
         {
-            if (!data.Any()) 
+            _logger.LogInformation("Извлекаем коэффициенты из набора входных данных..");
+            if (!data.Any())
+            {
+                _logger.LogWarning("Массив данных оказался пуст.");
                 return await Task.FromResult(new ErrorResult<RequestСoefficientMinMax>("Массив входных данных не содержит данных."));
+            }
 
+            var min = data.Select(x => x.Value).ToArray().Min();
+            var max = data.Select(x => x.Value).ToArray().Max();
+
+            _logger.LogInformation("Данные извлечены. Min: {0}; Max: {1}", min, max);
             return await Task.FromResult(new SuccessResult<RequestСoefficientMinMax>(new RequestСoefficientMinMax()
             {
-                Min = data.Select(x => x.Value).ToArray().Min(),
-                Max = data.Select(x => x.Value).ToArray().Max(),
+                Min = min,
+                Max = max,
             }));
         }
 
         public async Task<Result<RepeatedField<DateTimeValue>>> Normalize(RepeatedField<DateTimeValue> data, RequestСoefficientMinMax parameters)
         {
+            _logger.LogInformation("Пытаемся выполнить нормализацию входных данных..");
             if (!data.Any())
+            {
+                _logger.LogWarning("Массив данных оказался пуст.");
                 return new ErrorResult<RepeatedField<DateTimeValue>>("Массив входных данных не содержит данных.");
+            }
 
             var resultArray = new RepeatedField<DateTimeValue>();
-
             foreach (var dateTimeValue in data)
             {
                 if (dateTimeValue.Value == 0)
@@ -47,13 +58,18 @@ namespace Server.Core.Services
                 resultArray.Add(dateTimeValue);
             }
 
+            _logger.LogInformation("Нормализация выполнена.");
             return await Task.FromResult(new SuccessResult<RepeatedField<DateTimeValue>>(resultArray));
         }
 
         public async Task<Result<RepeatedField<DateTimeValue>>> Denormalize(RepeatedField<DateTimeValue> data, RequestСoefficientMinMax parameters)
         {
+            _logger.LogInformation("Пытаемся выполнить денормализацию входных данных..");
             if (!data.Any())
+            {
+                _logger.LogWarning("Массив данных оказался пуст.");
                 return new ErrorResult<RepeatedField<DateTimeValue>>("Массив входных данных не содержит данных.");
+            }
 
             if(!parameters.ValidateModel())
                 return new ErrorResult<RepeatedField<DateTimeValue>>("Отсутствуют коэффициенты для процесса денормализации данных.");
@@ -66,6 +82,7 @@ namespace Server.Core.Services
                 resultArray.Add(dateTimeValue);
             }
 
+            _logger.LogInformation("Денормализация выполнена.");
             return await Task.FromResult(new SuccessResult<RepeatedField<DateTimeValue>>(resultArray));
         }
     }

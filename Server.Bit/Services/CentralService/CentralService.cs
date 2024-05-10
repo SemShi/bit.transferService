@@ -27,8 +27,8 @@ namespace Server.Bit.Services
         public override async Task<BaseResponse> PredictConsumptionOnServer(CentralServerRequest request, ServerCallContext context)
         {
             //Тут проверку лицензии воткнуть
-
-            if(!request.DateTimeValue.Any())
+            _logger.LogInformation("Вызвана процедура {0}", "PredictConsumptionOnServer");
+            if (!request.DateTimeValue.Any())
                 return Helpers.GetBaseResponseError("0", "Пустой набор данных");
             
             var dbResponse = _databaseService.SaveClientData(request);
@@ -50,8 +50,8 @@ namespace Server.Bit.Services
 
             var aiResponse = await _centralService.SendDataToAi(newRequest, context, aiServiceAddress);
 
-            if (!aiResponse.TaskSubmitted)
-                return Helpers.GetBaseResponseError(aiResponse.Error.ErrorCode, aiResponse.Error.ErrorText);
+            if (!aiResponse.Data.TaskSubmitted)
+                return Helpers.GetBaseResponseError(aiResponse.Data.Error.ErrorCode, aiResponse.Data.Error.ErrorText);
             
             return Helpers.GetBaseResponseSuccess();
         }

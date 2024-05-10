@@ -30,6 +30,7 @@ namespace Server.Client.Services
 
         public override async Task<BaseResponse> SaveConsumptionResult(ClientServerRequest request, ServerCallContext context)
         {
+            _logger.LogInformation("Вызвана процедура {0}", "SaveConsumptionResult");
             var requestCoefficients = 
                 await _databaseService.GetCoefficientsByRequestId(request.RequestGuid);
             var denormalizedData =
@@ -52,8 +53,8 @@ namespace Server.Client.Services
 
             var responseClientSaveData =
                 await _domainClientDataService.SaveHourlyConsumption(requestDb, context, clientServiceAddress);
-            if (!responseClientSaveData.TaskSubmitted)
-                return Helpers.GetBaseResponseError(responseClientSaveData.Error.ErrorCode, responseClientSaveData.Error.ErrorText);
+            if (!responseClientSaveData.Data.TaskSubmitted)
+                return Helpers.GetBaseResponseError(responseClientSaveData.Data.Error.ErrorCode, responseClientSaveData.Data.Error.ErrorText);
 
             return Helpers.GetBaseResponseSuccess();
         }
