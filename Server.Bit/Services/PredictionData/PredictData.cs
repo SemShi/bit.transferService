@@ -39,7 +39,6 @@ namespace Server.Bit.Services
 
             var clientRequest = new ClientServerRequest()
             {
-                RequestGuid = "",
                 MeteringPointGuid = request.MeteringPointGuid,
                 DateTimeValue = { request.ConsumptionData }
             };

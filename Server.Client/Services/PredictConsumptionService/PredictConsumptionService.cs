@@ -39,6 +39,8 @@ namespace Server.Client.Services
         {
             if(request.RequestGuid == String.Empty)
                 return Helpers.GetBaseResponseError("0", "Empty request guid");
+            if (request.MeteringPointGuid == String.Empty)
+                return Helpers.GetBaseResponseError("0", "Empty meteringPointGuid");
 
             _logger.LogInformation("Вызвана процедура {0}", "PredictConsumption");
 
@@ -87,7 +89,7 @@ namespace Server.Client.Services
                 return Helpers.GetBaseResponseError("0", ((ErrorResult<RequestСoefficientMinMax>)coefficients).Message);
 
 
-            coefficients.Data.RequestId = request.RequestGuid;
+            coefficients.Data.MeteringUnitGuid = request.RequestGuid;
 
             var dbResponse = await _databaseService.AddCoefficients(coefficients.Data);
 
@@ -109,6 +111,7 @@ namespace Server.Client.Services
             var serverRequest = new CentralServerRequest()
             {
                 RequestGuid = request.RequestGuid,
+                MeteringPointGuid = request.MeteringPointGuid,
                 StartDate = request.StartDate,
                 DateTimeValue = { normalizedData.Data }
             };

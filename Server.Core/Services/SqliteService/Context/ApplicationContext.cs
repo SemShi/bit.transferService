@@ -16,9 +16,9 @@ namespace Server.Core.Services
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<PredictedRow>().HasKey(key => new { RequestID = key.RequestId, key.DateTime });
-            modelBuilder.Entity<ClientData>().HasKey(key => new { RequestID = key.RequestId, key.DateTime });
-            modelBuilder.Entity<RequestСoefficientMinMax>().HasKey(key => key.RequestId);
+            modelBuilder.Entity<PredictedRow>().HasKey(key => key.MeteringUnitGuid);
+            modelBuilder.Entity<ClientData>().HasKey(key => key.MeteringUnitGuid);
+            modelBuilder.Entity<RequestСoefficientMinMax>().HasKey(key => key.MeteringUnitGuid);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

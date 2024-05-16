@@ -37,12 +37,11 @@ namespace Server.Core.Services
         public async Task<Result> SavePrediction(SaveHourlyConsumptionRequest request)
         {
             _logger.LogInformation("Пытаемся сохранить спрогнозированные данные..");
-            //#TODO нужен requestId
             if (!request.ConsumptionData.Any())
                 return new ErrorResult("0");
 
             var dataToModels = 
-                request.ConsumptionData.Select(x => new PredictedRow(x, ""));
+                request.ConsumptionData.Select(x => new PredictedRow(x, request.MeteringPointGuid));
             try
             {
                 await _context.PredictedRows.AddRangeAsync(dataToModels);
@@ -68,17 +67,17 @@ namespace Server.Core.Services
                 entry.State = EntityState.Detached;
         }
 
-        public async Task<Result<RequestСoefficientMinMax>> GetCoefficientsByRequestId(string requestId)
+        public async Task<Result<RequestСoefficientMinMax>> GetCoefficientsByMeteringPointGuid(string meteringPointGuid)
         {
-            _logger.LogInformation("Пытаемся получить данные по коэффициентам. RequestId: {0}", requestId);
-            if(requestId == Guid.Empty.ToString()) return new ErrorResult<RequestСoefficientMinMax>("");
+            _logger.LogInformation("Пытаемся получить данные по коэффициентам. MeteringUnitGuid: {0}", meteringPointGuid);
+            if(meteringPointGuid == Guid.Empty.ToString()) return new ErrorResult<RequestСoefficientMinMax>("");
             var response = 
                 await _context.Сoefficients
-                .FindAsync(requestId);
+                .FindAsync(meteringPointGuid);
             if(response != null)
                 _logger.LogInformation("Данные получены!");
             else
-                _logger.LogWarning("Не удалось найти данные по коэффициентам. RequestId: {0}", requestId);
+                _logger.LogWarning("Не удалось найти данные по коэффициентам. MeteringUnitGuid: {0}", meteringPointGuid);
 
             return response is null
                 ? new ErrorResult<RequestСoefficientMinMax>("")
@@ -89,7 +88,7 @@ namespace Server.Core.Services
         {
             _logger.LogInformation("Пытаемся сохранить набор данных от клиентского сервиса..");
             var rows = request.DateTimeValue
-                    .Select(row => new ClientData(row, request.RequestGuid))
+                    .Select(row => new ClientData(row, request.MeteringPointGuid))
                     .ToList();
 
             try
@@ -108,9 +107,8 @@ namespace Server.Core.Services
 
         public async Task<Result<RepeatedField<DateTimeValue>>> GetClientData(HourlyConsumptionRequest request)
         {
-            // Нужен request_id
             _logger.LogInformation("Пытаемся получить набор данных от клиентского сервиса..");
-            var dbResponse = await _context.ClientDataRows.Where(x => x.RequestId == "").ToArrayAsync();
+            var dbResponse = await _context.ClientDataRows.Where(x => x.MeteringUnitGuid == request.MeteringPointGuid).ToArrayAsync();
 
             if (!dbResponse.Any())
             {

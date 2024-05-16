@@ -32,7 +32,7 @@ namespace Server.Client.Services
         {
             _logger.LogInformation("Вызвана процедура {0}", "SaveConsumptionResult");
             var requestCoefficients = 
-                await _databaseService.GetCoefficientsByRequestId(request.RequestGuid);
+                await _databaseService.GetCoefficientsByMeteringPointGuid(request.MeteringPointGuid);
             var denormalizedData =
                 await _normalizeDataService.Denormalize(request.DateTimeValue, requestCoefficients.Data);
 

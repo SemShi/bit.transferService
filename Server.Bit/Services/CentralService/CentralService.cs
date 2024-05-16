@@ -37,9 +37,9 @@ namespace Server.Bit.Services
 
             var newRequest = new PredictConsumptionRequest()
             {
-                //Заполнить модель
                 RequestGuid = request.RequestGuid,
                 StartDate = request.StartDate,
+                MeteringPointGuid = request.MeteringPointGuid
             };
             
             var aiServiceAddress =

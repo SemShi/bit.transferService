@@ -7,13 +7,13 @@ namespace Server.Core.Services
     public class RequestСoefficientMinMax
     {
         [Key]
-        public string RequestId { get; set; } = Guid.Empty.ToString();
+        public string MeteringUnitGuid { get; set; } = Guid.Empty.ToString();
         public double Min { get; set; } = 0;
         public double Max { get; set; } = 0;
 
         public bool ValidateModel()
         {
-            if (RequestId == Guid.Empty.ToString()) return false;
+            if (MeteringUnitGuid == Guid.Empty.ToString()) return false;
             if (Min == 0) return false;
             if (Max == 0) return false;
             return true;
