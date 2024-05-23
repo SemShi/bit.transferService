@@ -7,7 +7,7 @@ BuildConfig(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddGrpc();
-builder.Services.AddSingleton<ISqliteService, SqliteService>();
+builder.Services.AddTransient<ISqliteService, SqliteService>();
 builder.Services.AddSingleton<INormalizeDataService, NormalizeDataService>();
 builder.Services.AddSingleton<Server.Core.gRPC.Client.IDomainClientDataService, Server.Core.gRPC.Client.DomainClientDataService>();
 builder.Services.AddSingleton<Server.Core.gRPC.Client.ICentralService, Server.Core.gRPC.Client.CentralService>();

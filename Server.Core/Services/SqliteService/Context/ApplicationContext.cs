@@ -16,14 +16,16 @@ namespace Server.Core.Services
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<PredictedRow>().HasKey(key => key.MeteringUnitGuid);
-            modelBuilder.Entity<ClientData>().HasKey(key => key.MeteringUnitGuid);
+            modelBuilder.Entity<PredictedRow>().HasKey(key => new { key.MeteringUnitGuid, key.DateTime });
+            modelBuilder.Entity<ClientData>().HasKey(key => new {key.MeteringUnitGuid, key.DateTime});
             modelBuilder.Entity<RequestСoefficientMinMax>().HasKey(key => key.MeteringUnitGuid);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlite("Data Source=data.db");
+            optionsBuilder.EnableSensitiveDataLogging();
+            optionsBuilder.EnableDetailedErrors();
         }
     }
 }

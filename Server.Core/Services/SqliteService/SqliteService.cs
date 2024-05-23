@@ -22,6 +22,7 @@ namespace Server.Core.Services
             _logger.LogInformation("Пытаемся сохранить коэффициенты в базу..");
             try
             {
+                await _context.Сoefficients.Where(x => x.MeteringUnitGuid == model.MeteringUnitGuid).ExecuteDeleteAsync();
                 await _context.Сoefficients.AddAsync(model);
                 await _context.SaveChangesAsync();
             }
@@ -44,6 +45,7 @@ namespace Server.Core.Services
                 request.ConsumptionData.Select(x => new PredictedRow(x, request.MeteringPointGuid));
             try
             {
+                await _context.PredictedRows.Where(x => x.MeteringUnitGuid == request.MeteringPointGuid).ExecuteDeleteAsync();
                 await _context.PredictedRows.AddRangeAsync(dataToModels);
                 await _context.SaveChangesAsync();
             }
@@ -93,6 +95,7 @@ namespace Server.Core.Services
 
             try
             {
+                await _context.ClientDataRows.Where(x => x.MeteringUnitGuid == request.MeteringPointGuid).ExecuteDeleteAsync();
                 await _context.ClientDataRows.AddRangeAsync(rows);
                 await _context.SaveChangesAsync();
             }

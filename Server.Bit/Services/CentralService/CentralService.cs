@@ -11,17 +11,19 @@ namespace Server.Bit.Services
         private readonly IConfiguration _cfg;
         private readonly Server.Core.gRPC.Client.ICentralService _centralService;
         private readonly ISqliteService _databaseService;
+        protected readonly IWebHostEnvironment _hostEnvironment;
 
         public CentralService(
             ILogger<CentralService> logger, 
             IConfiguration cfg, 
             Server.Core.gRPC.Client.ICentralService centralService, 
-            ISqliteService databaseService)
+            ISqliteService databaseService, IWebHostEnvironment hostEnvironment)
         {
             _logger = logger;
             _cfg = cfg;
             _centralService = centralService;
             _databaseService = databaseService;
+            _hostEnvironment = hostEnvironment;
         }
 
         public override async Task<BaseResponse> PredictConsumptionOnServer(CentralServerRequest request, ServerCallContext context)
@@ -31,8 +33,8 @@ namespace Server.Bit.Services
             if (!request.DateTimeValue.Any())
                 return Helpers.GetBaseResponseError("0", "Пустой набор данных");
             
-            var dbResponse = _databaseService.SaveClientData(request);
-            if (!dbResponse.Result.Success)
+            var dbResponse = await _databaseService.SaveClientData(request);
+            if (!dbResponse.Success)
                 return Helpers.GetBaseResponseError("0", "");
 
             var newRequest = new PredictConsumptionRequest()
@@ -48,7 +50,7 @@ namespace Server.Bit.Services
             if (aiServiceAddress == string.Empty)
                 return Helpers.GetBaseResponseError("0", "");
 
-            var aiResponse = await _centralService.SendDataToAi(newRequest, context, aiServiceAddress);
+            var aiResponse = _hostEnvironment.IsProduction() ? await _centralService.SendDataToAi(newRequest, context, aiServiceAddress) : new SuccessResult<BaseResponse>(Helpers.GetBaseResponseSuccess());
 
             if (!aiResponse.Data.TaskSubmitted)
                 return Helpers.GetBaseResponseError(aiResponse.Data.Error.ErrorCode, aiResponse.Data.Error.ErrorText);

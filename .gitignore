@@ -16,6 +16,8 @@ node_modules
 *.userosscache
 *.userprefs
 
+*.db
+
 # Build results
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
