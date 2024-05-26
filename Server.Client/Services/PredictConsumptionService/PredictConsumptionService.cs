@@ -83,13 +83,14 @@ namespace Server.Client.Services
                 return Helpers.GetBaseResponseError("0", "");
             }
 
+            var jsonStr = System.Text.Json.JsonSerializer.Serialize(clientServiceResponse.Data.Result);
             var coefficients = await _normalizeDataService.GetMinMaxDictionary(clientServiceResponse.Data.Result.DateTimeValue);
 
             if (!coefficients.Success)
                 return Helpers.GetBaseResponseError("0", ((ErrorResult<RequestСoefficientMinMax>)coefficients).Message);
 
 
-            coefficients.Data.MeteringUnitGuid = request.RequestGuid;
+            coefficients.Data.MeteringUnitGuid = request.MeteringPointGuid;
 
             var dbResponse = await _databaseService.AddCoefficients(coefficients.Data);
 
@@ -98,6 +99,8 @@ namespace Server.Client.Services
 
             var normalizedData =
                 await _normalizeDataService.Normalize(clientServiceResponse.Data.Result.DateTimeValue, coefficients.Data);
+
+            var jsonStr1 = System.Text.Json.JsonSerializer.Serialize(normalizedData.Data);
 
             if (!normalizedData.Success)
                 return Helpers.GetBaseResponseError("0", ((ErrorResult<RepeatedField<DateTimeValue>>)normalizedData).Message);

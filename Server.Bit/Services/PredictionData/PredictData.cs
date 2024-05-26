@@ -45,6 +45,11 @@ namespace Server.Bit.Services
 
             var sendDataToClientResponse = 
                 await _centralService.SendDataToClient(clientRequest, context, clientServiceAddress);
+
+            if (!sendDataToClientResponse.Success)
+                return Helpers.GetBaseResponseError(sendDataToClientResponse.Data.Error.ErrorCode,
+                    sendDataToClientResponse.Data.Error.ErrorText);
+
             return sendDataToClientResponse.Data;
         }
     }

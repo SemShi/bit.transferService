@@ -35,7 +35,7 @@ namespace Server.Core
                     Value = 2
                 }
             };
-            var maxListItems = 744;
+            var maxListItems = 1460;
             
 
             var count = 1;

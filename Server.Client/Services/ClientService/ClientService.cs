@@ -13,19 +13,21 @@ namespace Server.Client.Services
         private readonly INormalizeDataService _normalizeDataService;
         private readonly ISqliteService _databaseService;
         private readonly IDomainClientDataService _domainClientDataService;
+        protected readonly IWebHostEnvironment _hostEnvironment;
 
         public ClientService(
             ILogger<ClientService> logger, 
             IConfiguration cfg, 
             INormalizeDataService normalizeDataService, 
             ISqliteService databaseService, 
-            IDomainClientDataService domainClientDataService)
+            IDomainClientDataService domainClientDataService, IWebHostEnvironment hostEnvironment)
         {
             _logger = logger;
             _cfg = cfg;
             _normalizeDataService = normalizeDataService;
             _databaseService = databaseService;
             _domainClientDataService = domainClientDataService;
+            _hostEnvironment = hostEnvironment;
         }
 
         public override async Task<BaseResponse> SaveConsumptionResult(ClientServerRequest request, ServerCallContext context)
@@ -35,6 +37,8 @@ namespace Server.Client.Services
                 await _databaseService.GetCoefficientsByMeteringPointGuid(request.MeteringPointGuid);
             var denormalizedData =
                 await _normalizeDataService.Denormalize(request.DateTimeValue, requestCoefficients.Data);
+
+            var jsonStr = System.Text.Json.JsonSerializer.Serialize(denormalizedData.Data);
 
             var requestDb = new SaveHourlyConsumptionRequest()
             {
@@ -51,8 +55,8 @@ namespace Server.Client.Services
             if (clientServiceAddress == string.Empty)
                 return Helpers.GetBaseResponseError("0", "");
 
-            var responseClientSaveData =
-                await _domainClientDataService.SaveHourlyConsumption(requestDb, context, clientServiceAddress);
+            var responseClientSaveData = _hostEnvironment.IsProduction() ?
+                await _domainClientDataService.SaveHourlyConsumption(requestDb, context, clientServiceAddress) : new SuccessResult<BaseResponse>(Helpers.GetBaseResponseSuccess());
             if (!responseClientSaveData.Data.TaskSubmitted)
                 return Helpers.GetBaseResponseError(responseClientSaveData.Data.Error.ErrorCode, responseClientSaveData.Data.Error.ErrorText);
 
